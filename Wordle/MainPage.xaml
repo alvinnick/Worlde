@@ -5,8 +5,11 @@
 
     <ScrollView>
         <VerticalStackLayout>
+            <Grid x:Name="GameGrid" RowDefinitions="*,*,*,*" ColumnDefinitions="*,*,*,*"  RowSpacing="10" ColumnSpacing="10" Padding="15">
 
-            
+                <!-- Buttons will be added in main method -->
+
+            </Grid>
         </VerticalStackLayout>
     </ScrollView>
 

@@ -8,6 +8,7 @@ public partial class MainPage : ContentPage
 	private string localPath = Path.Combine(FileSystem.AppDataDirectory, "words.txt");// Path to store the downloaded word list locally
 	private string[] words;// stores the list of words
 	private string targetWord;// The target word for the current game
+    private int gridSize = 5; // Default grid size for Wordle (5 letters)
 
 
 	public MainPage()
@@ -52,6 +53,41 @@ public partial class MainPage : ContentPage
         Random random = new Random(); // Random number generator
         targetWord = words[random.Next(words.Length)]; // Choose a random word
     }
+
+	 private void CreateGameGrid()
+    {
+        // Define grid rows and columns based on gridSize
+        for (int i = 0; i < gridSize; i++)
+        {
+            GameGrid.RowDefinitions.Add(new RowDefinition());
+             GameGrid.ColumnDefinitions.Add(new ColumnDefinition());
+        }
+
+         int index = 0;
+
+        for (int row = 0; row < gridSize ; row++)
+        {
+            for (int col = 0; col < gridSize; col++)
+            {
+				var textBox = new Entry // Use Entry for user input
+                {
+                    Placeholder = string.Empty, // Placeholder text
+                    HorizontalTextAlignment = TextAlignment.Center,
+                    VerticalTextAlignment = TextAlignment.Center,
+                    FontSize = 18
+                };
+
+                // Set row and column positions for the TextBox
+                Grid.SetRow(textBox, row);
+                Grid.SetColumn(textBox, col);
+
+                // Add the TextBox to the grid
+                GameGrid.Children.Add(textBox);
+            }
+
+        }
+
+	}
 
 
 	
