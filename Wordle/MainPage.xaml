@@ -1,15 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Wordle.MainPage">
+             x:Class="Wordle.MainPage" Title="WORDLE">
 
     <ScrollView>
         <VerticalStackLayout>
-            <Grid x:Name="GameGrid" RowDefinitions="*,*,*,*" ColumnDefinitions="*,*,*,*"  RowSpacing="10" ColumnSpacing="10" Padding="15">
-
-                <!-- Buttons will be added in main method -->
-
-            </Grid>
+            <Grid x:Name="GameGrid" VerticalOptions="Center" HorizontalOptions="Center" Padding="20" />
         </VerticalStackLayout>
     </ScrollView>
 

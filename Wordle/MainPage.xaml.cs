@@ -9,12 +9,12 @@ public partial class MainPage : ContentPage
 	private string[] words;// stores the list of words
 	private string targetWord;// The target word for the current game
     private int gridSize = 5; // Default grid size for Wordle (5 letters)
-
-
+    
 	public MainPage()
 	{
 		InitializeComponent();
 		InitializeWordList(); // Start the process of downloading and initializing the word list
+        CreateGameGrid(); // Set up the game grid
 	}
 
 
@@ -63,8 +63,6 @@ public partial class MainPage : ContentPage
              GameGrid.ColumnDefinitions.Add(new ColumnDefinition());
         }
 
-         int index = 0;
-
         for (int row = 0; row < gridSize ; row++)
         {
             for (int col = 0; col < gridSize; col++)
@@ -74,8 +72,10 @@ public partial class MainPage : ContentPage
                     Placeholder = string.Empty, // Placeholder text
                     HorizontalTextAlignment = TextAlignment.Center,
                     VerticalTextAlignment = TextAlignment.Center,
-                    FontSize = 18
+                    FontSize = 18,
+                    MaxLength = 1 // Limit input to a single character
                 };
+
 
                 // Set row and column positions for the TextBox
                 Grid.SetRow(textBox, row);
@@ -89,7 +89,8 @@ public partial class MainPage : ContentPage
 
 	}
 
+   
 
-	
+
 }
 

@@ -1,0 +1,1 @@
+-v --force --timestamp=none --sign - --entitlements /Users/alvin/Library/CloudStorage/OneDrive-AtlanticTU/SecondYear/CrossPlatform/Worlde/Wordle/obj/Debug/net8.0-maccatalyst/maccatalyst-arm64/Entitlements.xcent /Users/alvin/Library/CloudStorage/OneDrive-AtlanticTU/SecondYear/CrossPlatform/Worlde/Wordle/bin/Debug/net8.0-maccatalyst/maccatalyst-arm64/Wordle.app
