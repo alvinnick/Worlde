@@ -9,7 +9,9 @@ public partial class MainPage : ContentPage
 	private string[] words;// stores the list of words
 	private string targetWord;// The target word for the current game
     private int gridSize = 5; // Default grid size for Wordle (5 letters)
-    
+    private Entry[,] textBoxes; // Array to store all Entry elements
+
+
 	public MainPage()
 	{
 		InitializeComponent();
@@ -89,7 +91,19 @@ public partial class MainPage : ContentPage
 
 	}
 
-   
+    private string GetUserInput()
+    {
+        string userInput = string.Empty;
+
+        for (int col = 0; col < gridSize; col++)
+        {
+            var letter = textBoxes[0, col]?.Text; // Assuming the first row for the current guess
+            userInput += string.IsNullOrEmpty(letter) ? " " : letter.ToLower(); // Handle empty boxes gracefully
+        }
+
+        return userInput;
+    }
+
 
 
 }
