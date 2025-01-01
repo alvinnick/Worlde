@@ -6,6 +6,7 @@
     <ScrollView>
         <VerticalStackLayout>
             <Grid x:Name="GameGrid" VerticalOptions="Center" HorizontalOptions="Center" Padding="20" />
+            <Button Text = "Submit" VerticalOptions="Center" HorizontalOptions="Center" Clicked="SubmitGuess"/>
         </VerticalStackLayout>
     </ScrollView>
 

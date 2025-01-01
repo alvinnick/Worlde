@@ -58,6 +58,8 @@ public partial class MainPage : ContentPage
 
 	 private void CreateGameGrid()
     {
+        textBoxes = new Entry[gridSize, gridSize]; // Initialize the array
+
         // Define grid rows and columns based on gridSize
         for (int i = 0; i < gridSize; i++)
         {
@@ -77,7 +79,9 @@ public partial class MainPage : ContentPage
                     FontSize = 18,
                     MaxLength = 1 // Limit input to a single character
                 };
-
+                
+                // Store reference in the textBoxes array
+                textBoxes[row, col] = textBox;
 
                 // Set row and column positions for the TextBox
                 Grid.SetRow(textBox, row);
@@ -102,6 +106,67 @@ public partial class MainPage : ContentPage
         }
 
         return userInput;
+    }
+    private void SubmitGuess(object sender, EventArgs e)
+    {
+        string userInput = GetUserInput(); // Get the user's input from the grid
+        ValidateGuess(userInput); // Validate and provide feedback
+    }
+    private void ValidateGuess(string userInput)
+    {
+        if (userInput.Trim().Length != gridSize)
+        {
+            DisplayAlert("Invalid Input", "Please enter a complete word.", "OK");
+            return;
+        }
+
+        if (userInput == targetWord.ToLower())
+        {
+            DisplayAlert("Congratulations!", "You guessed the word!", "OK");
+            ResetGame();
+        }
+        else
+        {
+            ProvideFeedback(userInput);
+        }
+    }
+    private void ProvideFeedback(string userInput)
+    {
+        for (int col = 0; col < gridSize; col++)
+        {
+            var letterBox = textBoxes[0, col];
+            char guessedChar = userInput[col];
+            char targetChar = targetWord[col];
+
+            if (guessedChar == targetChar)
+            {
+                letterBox.BackgroundColor = Colors.Green;
+            }
+            else if (targetWord.Contains(guessedChar))
+            {
+                letterBox.BackgroundColor = Colors.Yellow;
+            }
+            else
+            {
+                letterBox.BackgroundColor = Colors.Gray;
+            }
+        }
+    }
+
+    private void ResetGame()
+    {
+        SelectTargetWord();
+
+        // Reset the text and background colors
+        for (int row = 0; row < gridSize; row++)
+        {
+            for (int col = 0; col < gridSize; col++)
+            {
+                var letterBox = textBoxes[0, col];
+                letterBox.Text = string.Empty;
+                letterBox.BackgroundColor = Colors.White;
+            }
+        }
     }
 
 
