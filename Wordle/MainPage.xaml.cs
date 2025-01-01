@@ -10,6 +10,7 @@ public partial class MainPage : ContentPage
 	private string targetWord;// The target word for the current game
     private int gridSize = 5; // Default grid size for Wordle (5 letters)
     private Entry[,] textBoxes; // Array to store all Entry elements
+    private int currentRow = 0; // Tracks the current row for guessing
 
 
 	public MainPage()
@@ -79,6 +80,16 @@ public partial class MainPage : ContentPage
                     FontSize = 18,
                     MaxLength = 1 // Limit input to a single character
                 };
+
+                // Handle TextChanged to enforce uppercase
+                textBox.TextChanged += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.NewTextValue))
+                    {
+                        textBox.Text = e.NewTextValue.ToUpper(); // Convert to uppercase
+                        textBox.CursorPosition = textBox.Text.Length; // Ensure cursor stays at the end
+                    }
+                };
                 
                 // Store reference in the textBoxes array
                 textBoxes[row, col] = textBox;
@@ -89,6 +100,9 @@ public partial class MainPage : ContentPage
 
                 // Add the TextBox to the grid
                 GameGrid.Children.Add(textBox);
+
+                textBox.IsEnabled = (row == currentRow); // Only enable the current row
+
             }
 
         }
@@ -101,17 +115,32 @@ public partial class MainPage : ContentPage
 
         for (int col = 0; col < gridSize; col++)
         {
-            var letter = textBoxes[0, col]?.Text; // Assuming the first row for the current guess
+            var letter = textBoxes[currentRow, col]?.Text; // Assuming the first row for the current guess
             userInput += string.IsNullOrEmpty(letter) ? " " : letter.ToLower(); // Handle empty boxes gracefully
         }
 
         return userInput;
     }
+
     private void SubmitGuess(object sender, EventArgs e)
     {
         string userInput = GetUserInput(); // Get the user's input from the grid
         ValidateGuess(userInput); // Validate and provide feedback
+
+        if (userInput != targetWord.ToLower()) // If the guess is incorrect
+        {
+
+            MoveToNextRow();
+            currentRow++;
+
+            if (currentRow >= gridSize) // Check if all rows are used
+            {
+                DisplayAlert("Game Over", $"You've used all your guesses! The word was: {targetWord}", "OK");
+                ResetGame(); // Restart the game
+            }
+        }
     }
+
     private void ValidateGuess(string userInput)
     {
         if (userInput.Trim().Length != gridSize)
@@ -130,11 +159,12 @@ public partial class MainPage : ContentPage
             ProvideFeedback(userInput);
         }
     }
+
     private void ProvideFeedback(string userInput)
     {
         for (int col = 0; col < gridSize; col++)
         {
-            var letterBox = textBoxes[0, col];
+            var letterBox = textBoxes[currentRow, col];
             char guessedChar = userInput[col];
             char targetChar = targetWord[col];
 
@@ -165,6 +195,21 @@ public partial class MainPage : ContentPage
                 var letterBox = textBoxes[0, col];
                 letterBox.Text = string.Empty;
                 letterBox.BackgroundColor = Colors.White;
+            }
+        }
+    }
+
+    private void MoveToNextRow()
+    {
+        for (int col = 0; col < gridSize; col++)
+        {
+            // Disable the current row
+            textBoxes[currentRow, col].IsEnabled = false;
+
+            // Enable the next row if it exists
+            if (currentRow + 1 < gridSize)
+            {
+                textBoxes[currentRow + 1, col].IsEnabled = true;
             }
         }
     }
