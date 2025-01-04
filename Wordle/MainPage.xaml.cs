@@ -84,10 +84,17 @@ public partial class MainPage : ContentPage
                 // Handle TextChanged to enforce uppercase
                 textBox.TextChanged += (sender, e) =>
                 {
-                    if (!string.IsNullOrEmpty(e.NewTextValue))
+                    if(!string.IsNullOrEmpty(e.NewTextValue))
                     {
-                        textBox.Text = e.NewTextValue.ToUpper(); // Convert to uppercase
-                        textBox.CursorPosition = textBox.Text.Length; // Ensure cursor stays at the end
+                        // Prevent recursion by ensuring Text is not repeatedly set
+                        if (textBox.Text != e.NewTextValue.ToUpper())
+                        {
+                            textBox.Text = e.NewTextValue.ToUpper(); // Convert to uppercase
+                            textBox.CursorPosition = textBox.Text.Length; // Ensure cursor stays at the end
+                        }
+
+                        MoveToNextBox(row, col); // Move focus to the next box
+                       
                     }
                 };
                 
@@ -109,6 +116,17 @@ public partial class MainPage : ContentPage
 
 	}
 
+    private void MoveToNextBox(int row, int col)
+    {
+        int nextCol = col + 1;
+
+        // Ensure we're not moving out of bounds
+        if (nextCol < gridSize)
+        {
+            textBoxes[row, nextCol]?.Focus(); // Set focus to the next column
+        }
+    }
+
     private string GetUserInput()
     {
         string userInput = string.Empty;
@@ -125,11 +143,19 @@ public partial class MainPage : ContentPage
     private void SubmitGuess(object sender, EventArgs e)
     {
         string userInput = GetUserInput(); // Get the user's input from the grid
+ 
+        
+        if (userInput.Trim().Length != gridSize)
+        {
+            DisplayAlert("Incomplete Guess", "Please fill all boxes before submitting.", "OK");
+            return;
+        }
+
         ValidateGuess(userInput); // Validate and provide feedback
 
         if (userInput != targetWord.ToLower()) // If the guess is incorrect
         {
-
+            ProvideFeedback(userInput, currentRow); // Pass currentRow explicitly
             MoveToNextRow();
             currentRow++;
 
@@ -156,29 +182,29 @@ public partial class MainPage : ContentPage
         }
         else
         {
-            ProvideFeedback(userInput);
+            ProvideFeedback(userInput,currentRow);
         }
     }
 
-    private void ProvideFeedback(string userInput)
+    private void ProvideFeedback(string userInput,int row)
     {
         for (int col = 0; col < gridSize; col++)
         {
-            var letterBox = textBoxes[currentRow, col];
+            var letterBox = textBoxes[row, col];
             char guessedChar = userInput[col];
             char targetChar = targetWord[col];
 
             if (guessedChar == targetChar)
             {
-                letterBox.BackgroundColor = Colors.Green;
+                letterBox.BackgroundColor = Colors.Green;// Correct position
             }
             else if (targetWord.Contains(guessedChar))
             {
-                letterBox.BackgroundColor = Colors.Yellow;
+                letterBox.BackgroundColor = Colors.Yellow;// Misplaced letter
             }
             else
             {
-                letterBox.BackgroundColor = Colors.Gray;
+                letterBox.BackgroundColor = Colors.Gray;// Incorrect letter
             }
         }
     }
@@ -188,15 +214,19 @@ public partial class MainPage : ContentPage
         SelectTargetWord();
 
         // Reset the text and background colors
-        for (int row = 0; row < gridSize; row++)
+       /* for (int row = 0; row < gridSize; row++)
         {
             for (int col = 0; col < gridSize; col++)
             {
-                var letterBox = textBoxes[0, col];
+                var letterBox = textBoxes[row, col];
                 letterBox.Text = string.Empty;
                 letterBox.BackgroundColor = Colors.White;
             }
-        }
+        }*/
+        
+
+        currentRow = 0; // Reset to the first row
+       // MoveToNextRow(); // Enable the first row
     }
 
     private void MoveToNextRow()
@@ -210,6 +240,40 @@ public partial class MainPage : ContentPage
             if (currentRow + 1 < gridSize)
             {
                 textBoxes[currentRow + 1, col].IsEnabled = true;
+            }
+        }
+    }
+
+    private void OnKeyboardButtonClicked(object sender, EventArgs e)
+    {
+        if (sender is Button button)
+        {
+            string letter = button.Text;
+
+            // Find the first empty box in the current row
+            for (int col = 0; col < gridSize; col++)
+            {
+                var entry = textBoxes[currentRow, col];
+                if (string.IsNullOrEmpty(entry.Text))
+                {
+                    entry.Text = letter; // Fill the box with the letter
+                    MoveToNextBox(currentRow, col); // Move to the next box
+                    return; // Exit after updating the first empty box
+                }
+            }
+        }
+    }
+
+    private void OnBackspaceClicked(object sender, EventArgs e)
+    {
+        for (int col = gridSize - 1; col >= 0; col--)
+        {
+            var entry = textBoxes[currentRow, col];
+            if (!string.IsNullOrEmpty(entry.Text))
+            {
+                entry.Text = string.Empty; // Clear the last filled box
+                entry.Focus(); // Keep focus on the cleared box
+                return; // Exit after clearing the last non-empty box
             }
         }
     }

@@ -6,8 +6,45 @@
     <ScrollView>
         <VerticalStackLayout>
             <Grid x:Name="GameGrid" VerticalOptions="Center" HorizontalOptions="Center" Padding="20" />
-            <Button Text = "Submit" VerticalOptions="Center" HorizontalOptions="Center" Clicked="SubmitGuess"/>
-        </VerticalStackLayout>
+            <!-- On-Screen Keyboard --> 
+       
+        <StackLayout VerticalOptions="End" HorizontalOptions="Center" Spacing="5">
+            <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="2">
+                <Button Text="Q" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="W" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="E" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="R" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="T" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="Y" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="U" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="I" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="O" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="P" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+            </StackLayout>
+            <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="2">
+                <Button Text="A" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="S" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="D" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="F" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="G" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="H" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="J" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="K" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="L" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+            </StackLayout>
+            <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="2">
+                <Button Text="Z" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="X" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="C" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="V" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="B" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="N" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="M" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
+                <Button Text="⌫" WidthRequest="40" HeightRequest="40" BackgroundColor="Red" TextColor="White" Clicked="OnBackspaceClicked" />
+                <Button Text="Submit" WidthRequest="80" HeightRequest="40" BackgroundColor="Green" TextColor="White" Clicked="SubmitGuess" />
+            </StackLayout>
+        </StackLayout>
+        </VerticalStackLayout> 
     </ScrollView>
 
 </ContentPage>
