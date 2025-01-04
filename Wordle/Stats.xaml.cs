@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 namespace Wordle;
 
 public partial class Stats : ContentPage
@@ -6,4 +7,14 @@ public partial class Stats : ContentPage
 	{
 		InitializeComponent();
 	}
+=======
+namespace Wordle;
+
+public partial class Stats : ContentPage
+{
+	public Stats()
+	{
+		InitializeComponent();
+	}
+>>>>>>> origin/main
 }
