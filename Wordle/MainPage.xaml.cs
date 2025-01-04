@@ -5,6 +5,7 @@ namespace Wordle;
 
 public partial class MainPage : ContentPage
 {
+	
 	private string localPath = Path.Combine(FileSystem.AppDataDirectory, "words.txt");// Path to store the downloaded word list locally
 	private string[] words;// stores the list of words
 	private string targetWord;// The target word for the current game
@@ -56,67 +57,7 @@ public partial class MainPage : ContentPage
         Random random = new Random(); // Random number generator
         targetWord = words[random.Next(words.Length)]; // Choose a random word
     }
-
-	 private void CreateGameGrid()
-    {
-        textBoxes = new Entry[gridSize, gridSize]; // Initialize the array
-
-        // Define grid rows and columns based on gridSize
-        for (int i = 0; i < gridSize; i++)
-        {
-            GameGrid.RowDefinitions.Add(new RowDefinition());
-             GameGrid.ColumnDefinitions.Add(new ColumnDefinition());
-        }
-
-        for (int row = 0; row < gridSize ; row++)
-        {
-            for (int col = 0; col < gridSize; col++)
-            {
-				var textBox = new Entry // Use Entry for user input
-                {
-                    Placeholder = string.Empty, // Placeholder text
-                    HorizontalTextAlignment = TextAlignment.Center,
-                    VerticalTextAlignment = TextAlignment.Center,
-                    FontSize = 18,
-                    MaxLength = 1 // Limit input to a single character
-                };
-
-                // Handle TextChanged to enforce uppercase
-                textBox.TextChanged += (sender, e) =>
-                {
-                    if(!string.IsNullOrEmpty(e.NewTextValue))
-                    {
-                        // Prevent recursion by ensuring Text is not repeatedly set
-                        if (textBox.Text != e.NewTextValue.ToUpper())
-                        {
-                            textBox.Text = e.NewTextValue.ToUpper(); // Convert to uppercase
-                            textBox.CursorPosition = textBox.Text.Length; // Ensure cursor stays at the end
-                        }
-
-                        MoveToNextBox(row, col); // Move focus to the next box
-                       
-                    }
-                };
-                
-                // Store reference in the textBoxes array
-                textBoxes[row, col] = textBox;
-
-                // Set row and column positions for the TextBox
-                Grid.SetRow(textBox, row);
-                Grid.SetColumn(textBox, col);
-
-                // Add the TextBox to the grid
-                GameGrid.Children.Add(textBox);
-
-                textBox.IsEnabled = (row == currentRow); // Only enable the current row
-
-            }
-
-        }
-
-	}
-
-    private void MoveToNextBox(int row, int col)
+	  private void MoveToNextBox(int row, int col)
     {
         int nextCol = col + 1;
 
@@ -127,6 +68,63 @@ public partial class MainPage : ContentPage
         }
     }
 
+
+	 private void CreateGameGrid()
+    {
+        textBoxes = new Entry[gridSize, gridSize]; // Initialize the array
+
+		// Define grid rows and columns based on gridSize
+		for (int i = 0; i < gridSize; i++)
+		{
+			GameGrid.RowDefinitions.Add(new RowDefinition());
+			GameGrid.ColumnDefinitions.Add(new ColumnDefinition());
+		}
+
+		// Populate the grid with text boxes
+		for (int row = 0; row < gridSize; row++)
+		{
+			for (int col = 0; col < gridSize; col++)
+			{
+				var textBox = CreateTextBox(row, col); // Use a helper method
+				textBoxes[row, col] = textBox; // Store reference
+				Grid.SetRow(textBox, row); // Set row position
+				Grid.SetColumn(textBox, col); // Set column position
+				GameGrid.Children.Add(textBox); // Add to the grid
+			}
+		}
+
+	}
+	private Entry CreateTextBox(int row, int col)
+	{
+		var textBox = new Entry
+		{
+			Placeholder = string.Empty,
+			HorizontalTextAlignment = TextAlignment.Center,
+			VerticalTextAlignment = TextAlignment.Center,
+			FontSize = 18,
+			MaxLength = 1,
+			IsEnabled = (row == currentRow) // Enable only the current row
+		};
+
+		// Handle TextChanged to enforce uppercase and move focus
+		textBox.TextChanged += (sender, e) =>
+		{
+			if (!string.IsNullOrEmpty(e.NewTextValue))
+			{
+				if (textBox.Text != e.NewTextValue.ToUpper())
+				{
+					textBox.Text = e.NewTextValue.ToUpper(); // Convert to uppercase
+					textBox.CursorPosition = textBox.Text.Length; // Keep cursor at the end
+				}
+				MoveToNextBox(row, col); // Move to the next box
+			}
+		};
+
+		return textBox;
+	}
+
+
+  
     private string GetUserInput()
     {
         string userInput = string.Empty;
@@ -185,7 +183,7 @@ public partial class MainPage : ContentPage
             ProvideFeedback(userInput,currentRow);
         }
     }
-
+    
     private void ProvideFeedback(string userInput,int row)
     {
         for (int col = 0; col < gridSize; col++)
@@ -213,20 +211,7 @@ public partial class MainPage : ContentPage
     {
         SelectTargetWord();
 
-        // Reset the text and background colors
-       /* for (int row = 0; row < gridSize; row++)
-        {
-            for (int col = 0; col < gridSize; col++)
-            {
-                var letterBox = textBoxes[row, col];
-                letterBox.Text = string.Empty;
-                letterBox.BackgroundColor = Colors.White;
-            }
-        }*/
-        
-
         currentRow = 0; // Reset to the first row
-       // MoveToNextRow(); // Enable the first row
     }
 
     private void MoveToNextRow()
@@ -277,6 +262,7 @@ public partial class MainPage : ContentPage
             }
         }
     }
+
 
 
 
