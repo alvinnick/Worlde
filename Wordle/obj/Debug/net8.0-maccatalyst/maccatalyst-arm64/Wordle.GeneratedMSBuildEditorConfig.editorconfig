@@ -34,6 +34,12 @@ build_metadata.AdditionalFiles.ManifestResourceName = Wordle.MainPage.xaml
 build_metadata.AdditionalFiles.TargetPath = MainPage.xaml
 build_metadata.AdditionalFiles.RelativePath = MainPage.xaml
 
+[/Users/alvin/Library/CloudStorage/OneDrive-AtlanticTU/SecondYear/CrossPlatform/Worlde/Wordle/PlayerStatsPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = Wordle.PlayerStatsPage.xaml
+build_metadata.AdditionalFiles.TargetPath = PlayerStatsPage.xaml
+build_metadata.AdditionalFiles.RelativePath = PlayerStatsPage.xaml
+
 [/Users/alvin/Library/CloudStorage/OneDrive-AtlanticTU/SecondYear/CrossPlatform/Worlde/Wordle/Resources/Styles/Colors.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = Wordle.Resources.Styles.Colors.xaml

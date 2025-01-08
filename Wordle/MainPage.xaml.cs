@@ -23,6 +23,7 @@ public partial class MainPage : ContentPage
 
 	public MainPage()
 	{
+		this.SizeChanged += OnSizeChanged;
 		InitializeComponent();
 		InitializeWordList(); // Start the process of downloading and initializing the word list
         CreateGameGrid(); // Set up the game grid
@@ -31,8 +32,33 @@ public partial class MainPage : ContentPage
 		Stats = new PlayerStats();
 		LoadStats();
 		Rankings = new ObservableCollection<PlayerStats>(); // Initialize Rankings
-		//this.LayoutChanged += OnWindowChange;
+		ConfigureKeyboard(); // Adjust keyboard layout for the platform
 	
+
+	}
+	private void OnSizeChanged(object sender, EventArgs e)
+	{
+		// Get the available width and height
+		double availableWidth = this.Width;
+		double availableHeight = this.Height;
+
+		// Calculate sizes dynamically
+		double gridSize = Math.Min(availableWidth * 0.9, availableHeight * 0.6); // 90% width or 60% height
+		GameGrid.WidthRequest = gridSize;
+		GameGrid.HeightRequest = gridSize;
+
+		double keyboardHeight = availableHeight * 0.25; // Keyboard occupies 25% of height
+		KeyboardStack.HeightRequest = keyboardHeight;
+
+		// Adjust padding and margins to ensure fit
+		MainLayout.Padding = new Thickness(10, 10);
+		GameGrid.Margin = new Thickness(0, 10, 0, 10);
+
+		// Center the grid and keyboard
+		GameGrid.HorizontalOptions = LayoutOptions.Center;
+		GameGrid.VerticalOptions = LayoutOptions.Center;
+		KeyboardStack.HorizontalOptions = LayoutOptions.Center;
+		KeyboardStack.VerticalOptions = LayoutOptions.End;
 	}
 
 	// Initializes the word list by downloading it (if necessary)
@@ -113,7 +139,7 @@ public partial class MainPage : ContentPage
 			FontSize = 18,
 			MaxLength = 1,
 			IsEnabled = (row == currentRow), // Enable only the current row
-			IsReadOnly = DeviceInfo.Current.Platform == DevicePlatform.Android || DeviceInfo.Current.Platform == DevicePlatform.iOS // Disable on-screen keyboard on mobile
+			
 		};
 			
 			// Set initial background color based on the app theme
@@ -443,30 +469,6 @@ public partial class MainPage : ContentPage
 		// Navigate to the PlayerStatsPage and pass the current player's stats and rankings
 		await Navigation.PushAsync(new PlayerStatsPage(Stats, Rankings));
 	}	
-	private void OnWindowChange(object? sender, EventArgs e)
-	{
-		// Get the total available width and height
-		double totalWidth = this.Width - 20; // Subtract padding
-		double totalHeight = this.Height - 20;
-
-		// Reserve space for buttons and the on-screen keyboard
-		double buttonHeight = 50; // Estimated height for buttons
-		double keyboardHeight = 150; // Estimated height for on-screen keyboard
-
-		// Calculate available height for the grid
-		double availableHeight = totalHeight - buttonHeight - keyboardHeight - 20; // Additional padding
-
-		// Calculate grid size to fit within available dimensions
-		double gridSize = Math.Min(totalWidth, availableHeight);
-
-		// Apply calculated size to the game grid
-		GameGrid.WidthRequest = gridSize;
-		GameGrid.HeightRequest = gridSize;
-
-		// Center the grid within the layout
-		GameGrid.HorizontalOptions = LayoutOptions.Center;
-		GameGrid.VerticalOptions = LayoutOptions.Center;
-	}
 	private void UpdateRankings()
 	{
 		var existingPlayer = Rankings.FirstOrDefault(r => r.PlayerName == Stats.PlayerName);
@@ -491,4 +493,48 @@ public partial class MainPage : ContentPage
 
 		SaveStats();
 	}
+
+	private void ConfigureKeyboard()
+	{
+		if (DeviceInfo.Current.Platform == DevicePlatform.Android)
+		{
+			// Show only "Submit" and "Delete" buttons on Android
+			KeyboardStack.Children.Clear();
+
+			var row = new StackLayout
+			{
+				Orientation = StackOrientation.Horizontal,
+				HorizontalOptions = LayoutOptions.Center,
+				Spacing = 2
+			};
+
+			// Delete Button
+			var deleteButton = new Button
+			{
+				Text = "⌫",
+				WidthRequest = 80,
+				HeightRequest = 40,
+				BackgroundColor = Colors.Red,
+				TextColor = Colors.White
+			};
+			deleteButton.Clicked += OnBackspaceClicked;
+			row.Children.Add(deleteButton);
+
+			// Submit Button
+			var submitButton = new Button
+			{
+				Text = "Submit",
+				WidthRequest = 80,
+				HeightRequest = 40,
+				BackgroundColor = Colors.Green,
+				TextColor = Colors.White
+			};
+			submitButton.Clicked += SubmitGuess;
+			row.Children.Add(submitButton);
+
+			KeyboardStack.Children.Add(row);
+		}
+	}
+
 }
+

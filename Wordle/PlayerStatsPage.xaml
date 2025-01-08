@@ -9,6 +9,7 @@
         <Label Text="{Binding Stats.CurrentWinStreak, StringFormat='Current Streak: {0}'}" FontSize="18" />
         <Label Text="{Binding Stats.MaxWinStreak, StringFormat='Max Streak: {0}'}" FontSize="18" />
         <Label Text="Rankings:" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
+        <Label Text="Ranking will be displays once you input names" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center" />
         <CollectionView ItemsSource="{Binding Rankings}" Margin="0,20,0,0">
             <CollectionView.ItemTemplate>
                 <DataTemplate>

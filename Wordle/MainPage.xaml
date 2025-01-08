@@ -3,12 +3,19 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Wordle.MainPage" Title="WORDLE">
 
-    <ScrollView>
-        <VerticalStackLayout>
-            <Grid x:Name="GameGrid" VerticalOptions="Center" HorizontalOptions="Center" Padding="20" />
-            <!-- On-Screen Keyboard --> 
-       
-        <StackLayout VerticalOptions="End" HorizontalOptions="Center" Spacing="5">
+   <ScrollView>
+    <VerticalStackLayout x:Name="MainLayout" Padding="10" Spacing="10">
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
+            <Button Text="Game Stats" FontSize="16" BackgroundColor="purple" TextColor="White" Clicked="OnShowStatsClicked" />
+            <Button Text="Settings" FontSize="16" BackgroundColor="purple" TextColor="White" Clicked="OnSettingsClicked" />
+            <Button Text="Set Name" FontSize="16" BackgroundColor="purple" TextColor="White" Clicked="OnSetNameClicked" />
+            <Button Text="Player Ranks" FontSize="16" BackgroundColor="purple" TextColor="White" Clicked="OnPlayerStatsClicked" />
+        </StackLayout>
+
+        <Grid x:Name="GameGrid" Padding="10" VerticalOptions="Center" HorizontalOptions="Center" />
+
+        <StackLayout x:Name="KeyboardStack" VerticalOptions="End" HorizontalOptions="Center" Spacing="5">
+            <!-- Keyboard Buttons -->
             <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="2">
                 <Button Text="Q" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
                 <Button Text="W" WidthRequest="40" HeightRequest="40" Clicked="OnKeyboardButtonClicked" />
@@ -44,7 +51,7 @@
                 <Button Text="Submit" WidthRequest="80" HeightRequest="40" BackgroundColor="Green" TextColor="White" Clicked="SubmitGuess" />
             </StackLayout>
         </StackLayout>
-        </VerticalStackLayout> 
+    </VerticalStackLayout>
     </ScrollView>
 
 </ContentPage>

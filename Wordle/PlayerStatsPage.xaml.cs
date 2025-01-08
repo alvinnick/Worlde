@@ -1,3 +1,4 @@
+using Wordle;
 namespace Wordle;
 using System.Collections.ObjectModel;
 public partial class PlayerStatsPage : ContentPage
