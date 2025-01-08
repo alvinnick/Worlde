@@ -1,3 +1,6 @@
+using Wordle;
+using System.Text.Json;
+using System.Collections.ObjectModel;
 namespace Wordle;
 
 public partial class SettingsPage : ContentPage
@@ -45,4 +48,52 @@ public partial class SettingsPage : ContentPage
         await Navigation.PopAsync();
     }
 
+    private void ResetData()
+    {
+        try
+        {
+            // Paths to the JSON files
+            string statsFile = Path.Combine(FileSystem.AppDataDirectory, "playerStats.json");
+            string rankingsFile = Path.Combine(FileSystem.AppDataDirectory, "rankings.json");
+
+            // Delete the files if they exist
+            if (File.Exists(statsFile))
+            {
+                File.Delete(statsFile);
+            }
+
+            if (File.Exists(rankingsFile))
+            {
+                File.Delete(rankingsFile);
+            }
+
+            // Clear in-memory data
+            var mainPage = Application.Current.MainPage as MainPage;
+            if (mainPage != null)
+            {
+                mainPage.Stats = new PlayerStats();
+                mainPage.Rankings = new ObservableCollection<PlayerStats>();
+                mainPage.SaveStats();
+                
+            }
+
+            DisplayAlert("Reset Complete", "All data has been reset.", "OK");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error resetting data: {ex.Message}");
+            DisplayAlert("Error", "Failed to reset data. Try again.", "OK");
+        }
+    }
+
+    private void OnResetDataClicked(object sender, EventArgs e)
+    {
+        bool confirm = DisplayAlert("Confirm Reset", "Are you sure you want to reset all data?", "Yes", "No").Result;
+        if (confirm)
+        {
+            ResetData();
+        }
+    }
+
 }
+

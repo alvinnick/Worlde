@@ -1,5 +1,6 @@
-﻿using System.Net.Http;
-using System.IO;
+﻿using Wordle;
+using System.Text.Json;
+using System.Collections.ObjectModel;
 
 namespace Wordle;
 
@@ -12,15 +13,27 @@ public partial class MainPage : ContentPage
     private int gridSize = 5; // Default grid size for Wordle (5 letters)
     private Entry[,] textBoxes; // Array to store all Entry elements
     private int currentRow = 0; // Tracks the current row for guessing
-
+	private bool isChoiceDialogOpen = false;
+	private int gamesPlayed = 0; // Total games played
+	private int gamesWon = 0;    // Total games won
+	private int currentWinStreak = 0; // Current consecutive wins
+	private int maxWinStreak = 0;     // Maximum consecutive win streak
+	public PlayerStats Stats { get; internal set; }
+	public ObservableCollection<PlayerStats> Rankings { get; internal set; }
 
 	public MainPage()
 	{
 		InitializeComponent();
 		InitializeWordList(); // Start the process of downloading and initializing the word list
         CreateGameGrid(); // Set up the game grid
-	}
 
+		// Initialize player stats
+		Stats = new PlayerStats();
+		LoadStats();
+		Rankings = new ObservableCollection<PlayerStats>(); // Initialize Rankings
+		//this.LayoutChanged += OnWindowChange;
+	
+	}
 
 	// Initializes the word list by downloading it (if necessary)
 	private async void InitializeWordList()
@@ -29,7 +42,6 @@ public partial class MainPage : ContentPage
         LoadWordList(); // Load the words into an array
         SelectTargetWord(); // Randomly select a target word for the game
     }
-
 
 	// Downloads the word list from a remote URL if not in local file
 	async Task DownloadWordListAsync()
@@ -44,7 +56,6 @@ public partial class MainPage : ContentPage
 			File.WriteAllText(localPath, content); // Save the word list to the local file system
 		}
 	}
-
 	// Loads the word list from the local file into an array
     void LoadWordList()
     {
@@ -57,7 +68,7 @@ public partial class MainPage : ContentPage
         Random random = new Random(); // Random number generator
         targetWord = words[random.Next(words.Length)]; // Choose a random word
     }
-	  private void MoveToNextBox(int row, int col)
+	private void MoveToNextBox(int row, int col)
     {
         int nextCol = col + 1;
 
@@ -67,9 +78,7 @@ public partial class MainPage : ContentPage
             textBoxes[row, nextCol]?.Focus(); // Set focus to the next column
         }
     }
-
-
-	 private void CreateGameGrid()
+	private void CreateGameGrid()
     {
         textBoxes = new Entry[gridSize, gridSize]; // Initialize the array
 
@@ -103,8 +112,12 @@ public partial class MainPage : ContentPage
 			VerticalTextAlignment = TextAlignment.Center,
 			FontSize = 18,
 			MaxLength = 1,
-			IsEnabled = (row == currentRow) // Enable only the current row
+			IsEnabled = (row == currentRow), // Enable only the current row
+			IsReadOnly = DeviceInfo.Current.Platform == DevicePlatform.Android || DeviceInfo.Current.Platform == DevicePlatform.iOS // Disable on-screen keyboard on mobile
 		};
+			
+			// Set initial background color based on the app theme
+    		UpdateTextBoxTheme(textBox);
 
 		// Handle TextChanged to enforce uppercase and move focus
 		textBox.TextChanged += (sender, e) =>
@@ -118,13 +131,11 @@ public partial class MainPage : ContentPage
 				}
 				MoveToNextBox(row, col); // Move to the next box
 			}
+			//MoveToNextRow();
 		};
 
 		return textBox;
 	}
-
-
-  
     private string GetUserInput()
     {
         string userInput = string.Empty;
@@ -137,53 +148,63 @@ public partial class MainPage : ContentPage
 
         return userInput;
     }
+	private void SubmitGuess(object sender, EventArgs e)
+	{
+		string userInput = GetUserInput(); // Collect the user's input from the grid
 
-    private void SubmitGuess(object sender, EventArgs e)
-    {
-        string userInput = GetUserInput(); // Get the user's input from the grid
- 
-        
-        if (userInput.Trim().Length != gridSize)
-        {
-            DisplayAlert("Incomplete Guess", "Please fill all boxes before submitting.", "OK");
-            return;
-        }
+		// Validate input length
+		if (userInput.Trim().Length != gridSize)
+		{
+			DisplayAlert("Incomplete Guess", "Please fill all boxes before submitting.", "OK");
+			return;
+		}
 
-        ValidateGuess(userInput); // Validate and provide feedback
+		// Increment games played if it's the last attempt
+		if (currentRow == gridSize - 1 && userInput != targetWord.ToLower())
+		{
+			Stats.GamesPlayed++;
+			gamesPlayed++;
+			Stats.CurrentWinStreak = 0; // Reset win streak on loss
+			currentWinStreak = 0;
+			SaveStats();
+			DisplayAlert("Game Over", $"You've used all your guesses! The word was: {targetWord}", "OK");
+			ResetGrid();
+			return;
+		}
 
-        if (userInput != targetWord.ToLower()) // If the guess is incorrect
-        {
-            ProvideFeedback(userInput, currentRow); // Pass currentRow explicitly
-            MoveToNextRow();
-            currentRow++;
+		// Check if the guess is correct
+		if (userInput == targetWord.ToLower())
+		{
+			Stats.GamesPlayed++;
+			gamesPlayed++;
+			Stats.GamesWon++;
+			gamesWon++;
+			Stats.CurrentWinStreak++;
+			currentWinStreak++;
 
-            if (currentRow >= gridSize) // Check if all rows are used
-            {
-                DisplayAlert("Game Over", $"You've used all your guesses! The word was: {targetWord}", "OK");
-                ResetGame(); // Restart the game
-            }
-        }
-    }
+			if (Stats.CurrentWinStreak > Stats.MaxWinStreak)
+			{
+				Stats.MaxWinStreak = Stats.CurrentWinStreak;
+			}
+			if (currentWinStreak > maxWinStreak)
+			{
+				maxWinStreak = currentWinStreak;
+			}
 
-    private void ValidateGuess(string userInput)
-    {
-        if (userInput.Trim().Length != gridSize)
-        {
-            DisplayAlert("Invalid Input", "Please enter a complete word.", "OK");
-            return;
-        }
+			SaveStats(); // Save updated stats
+			ResetGameWithChoice();
+			UpdateRankings();
+		}
+		else
+		{
+			// Provide feedback for the current guess
+			ProvideFeedback(userInput, currentRow);
 
-        if (userInput == targetWord.ToLower())
-        {
-            DisplayAlert("Congratulations!", "You guessed the word!", "OK");
-            ResetGame();
-        }
-        else
-        {
-            ProvideFeedback(userInput,currentRow);
-        }
-    }
-    
+			// Move to the next row for a new guess
+			MoveToNextRow();
+			currentRow++;
+		}
+	}
     private void ProvideFeedback(string userInput,int row)
     {
         for (int col = 0; col < gridSize; col++)
@@ -206,14 +227,68 @@ public partial class MainPage : ContentPage
             }
         }
     }
-
     private void ResetGame()
-    {
-        SelectTargetWord();
+	{ 
+		// Select a new target word
+		SelectTargetWord();
 
-        currentRow = 0; // Reset to the first row
+		// Reset the current row
+		currentRow = 0;
+
+		// Clear existing grid
+		GameGrid.Children.Clear();
+		GameGrid.RowDefinitions.Clear();
+		GameGrid.ColumnDefinitions.Clear();
+
+		// Recreate the grid
+		CreateGameGrid();
+		
     }
+	private async void ResetGameWithChoice()
+	{
+		if (isChoiceDialogOpen) return; // Prevent multiple dialogs from opening
+		isChoiceDialogOpen = true;
 
+		string action = await DisplayActionSheet(
+			"Congratulations! You guessed the word!",
+			"Cancel",
+			null,
+			"View Stats",
+			"Start Over",
+			"Continue"
+		);
+
+		isChoiceDialogOpen = false; // Reset flag after user makes a choice
+
+		if (action == "View Stats")
+		{
+			await Navigation.PushAsync(new StatsPage(Stats.GamesPlayed, Stats.GamesWon, Stats.CurrentWinStreak, Stats.MaxWinStreak));
+			ResetGrid();
+		}
+		else if (action == "Start Over")
+		{
+			ResetGame(); // Fully restart the game
+		}
+		else if (action == "Continue")
+		{
+			SelectTargetWord(); // Choose a new target word
+			ResetGrid(); // Clear the grid without resetting stats
+		}
+
+	}
+	private void ResetGrid()
+	{
+		// Reset the current row to the first one
+		currentRow = 0;
+
+		// Clear the existing grid
+		GameGrid.Children.Clear();
+		GameGrid.RowDefinitions.Clear();
+		GameGrid.ColumnDefinitions.Clear();
+
+		// Recreate the grid
+		CreateGameGrid();
+	}
     private void MoveToNextRow()
     {
         for (int col = 0; col < gridSize; col++)
@@ -228,7 +303,6 @@ public partial class MainPage : ContentPage
             }
         }
     }
-
     private void OnKeyboardButtonClicked(object sender, EventArgs e)
     {
         if (sender is Button button)
@@ -248,7 +322,6 @@ public partial class MainPage : ContentPage
             }
         }
     }
-
     private void OnBackspaceClicked(object sender, EventArgs e)
     {
         for (int col = gridSize - 1; col >= 0; col--)
@@ -262,9 +335,160 @@ public partial class MainPage : ContentPage
             }
         }
     }
+	private async void OnShowStatsClicked(object sender, EventArgs e)
+	{
+		// Navigate to the StatsPage and pass stats
+		//await Navigation.PushAsync(new StatsPage(Stats.GamesPlayed, Stats.GamesWon, Stats.CurrentWinStreak, Stats.MaxWinStreak));
+		// Navigate to the StatsPage and pass stats
+		await Navigation.PushAsync(new StatsPage(gamesPlayed, gamesWon, currentWinStreak, maxWinStreak));
+	}
+	private async void OnSettingsClicked(object sender, EventArgs e)
+	{
+		// Navigate to the SettingsPage
+		await Navigation.PushAsync(new SettingsPage(this));
+	}
+	private void UpdateTextBoxTheme(Entry textBox)
+	{
+		if (Application.Current.UserAppTheme == AppTheme.Dark)
+		{
+			textBox.BackgroundColor = Colors.DarkGray; // Dark mode color
+			textBox.TextColor = Colors.White;         // Text color for dark mode
+		}
+		else
+		{
+			textBox.BackgroundColor = Colors.LightGray; // Light mode color
+			textBox.TextColor = Colors.Black;           // Text color for light mode
+		}
+	}
+	public void UpdateGridTheme()
+	{
+		for (int row = 0; row < gridSize; row++)
+		{
+			for (int col = 0; col < gridSize; col++)
+			{
+				var textBox = textBoxes[row, col];
+				UpdateTextBoxTheme(textBox); // Update each box's background color
+			}
+		}
+	}
+	public bool ProvideHint()
+	{
+		if (currentRow >= gridSize)
+		{
+			return false; // No hints available if the current row is invalid
+		}
 
+		for (int col = 0; col < gridSize; col++)
+		{
+			var textBox = textBoxes[currentRow, col];
 
+			// If the box is empty, fill it with the correct letter
+			if (string.IsNullOrEmpty(textBox.Text))
+			{
+				textBox.Text = targetWord[col].ToString().ToUpper(); // Show the correct letter
+				textBox.BackgroundColor = Colors.LightBlue;          // Highlight the hint
+				return true;
+			}
+		}
 
+		return false; // No empty boxes available for hints
+	}
+	public void SaveStats()
+	{
+		try
+		{
+			var statsJson = JsonSerializer.Serialize(Stats);
+			File.WriteAllText(Path.Combine(FileSystem.AppDataDirectory, "playerStats.json"), statsJson);
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error saving stats: {ex.Message}");
+		}
+	}
+	private void LoadStats()
+	{
+		try
+		{
+			var statsFile = Path.Combine(FileSystem.AppDataDirectory, "playerStats.json");
+			if (File.Exists(statsFile))
+			{
+				var statsJson = File.ReadAllText(statsFile);
+				var loadedStats = JsonSerializer.Deserialize<PlayerStats>(statsJson);
+				if (loadedStats != null)
+				{
+					Stats = loadedStats;
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error loading stats: {ex.Message}");
+		}
+	}
+	private async void OnSetNameClicked(object sender, EventArgs e)
+	{
+		// Prompt the user to enter their name
+		string name = await DisplayPromptAsync("Set Name", "Enter your name:");
+		if (!string.IsNullOrWhiteSpace(name))
+		{
+			Stats.PlayerName = name; // Update the player name in stats
+			SaveStats(); // Save updated stats to local storage
 
+			// Optionally display a confirmation
+			await DisplayAlert("Name Set", $"Welcome, {name}!", "OK");
+		}
+	}
+	private async void OnPlayerStatsClicked(object sender, EventArgs e)
+	{
+		// Navigate to the PlayerStatsPage and pass the current player's stats and rankings
+		await Navigation.PushAsync(new PlayerStatsPage(Stats, Rankings));
+	}	
+	private void OnWindowChange(object? sender, EventArgs e)
+	{
+		// Get the total available width and height
+		double totalWidth = this.Width - 20; // Subtract padding
+		double totalHeight = this.Height - 20;
+
+		// Reserve space for buttons and the on-screen keyboard
+		double buttonHeight = 50; // Estimated height for buttons
+		double keyboardHeight = 150; // Estimated height for on-screen keyboard
+
+		// Calculate available height for the grid
+		double availableHeight = totalHeight - buttonHeight - keyboardHeight - 20; // Additional padding
+
+		// Calculate grid size to fit within available dimensions
+		double gridSize = Math.Min(totalWidth, availableHeight);
+
+		// Apply calculated size to the game grid
+		GameGrid.WidthRequest = gridSize;
+		GameGrid.HeightRequest = gridSize;
+
+		// Center the grid within the layout
+		GameGrid.HorizontalOptions = LayoutOptions.Center;
+		GameGrid.VerticalOptions = LayoutOptions.Center;
+	}
+	private void UpdateRankings()
+	{
+		var existingPlayer = Rankings.FirstOrDefault(r => r.PlayerName == Stats.PlayerName);
+		if (existingPlayer != null)
+		{
+			existingPlayer.GamesPlayed = Stats.GamesPlayed;
+			existingPlayer.GamesWon = Stats.GamesWon;
+			existingPlayer.CurrentWinStreak = Stats.CurrentWinStreak;
+			existingPlayer.MaxWinStreak = Stats.MaxWinStreak;
+		}
+		else
+		{
+			Rankings.Add(new PlayerStats
+			{
+				PlayerName = Stats.PlayerName,
+				GamesPlayed = Stats.GamesPlayed,
+				GamesWon = Stats.GamesWon,
+				CurrentWinStreak = Stats.CurrentWinStreak,
+				MaxWinStreak = Stats.MaxWinStreak
+			});
+		}
+
+		SaveStats();
+	}
 }
-

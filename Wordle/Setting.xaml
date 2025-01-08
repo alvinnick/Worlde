@@ -14,7 +14,13 @@
          <!-- Provide Hint Button -->
         <StackLayout Orientation="Horizontal" Spacing="10" VerticalOptions="Start">
             <Label Text="Provide Hint: " FontSize="18" VerticalOptions="Center" />
-            <Button Text="Hint"  FontSize="16" BackgroundColor="Blue" TextColor="White" Clicked="OnProvideHintClicked" />
+            <Button Text="Hint"  FontSize="16" BackgroundColor="purple" TextColor="White" Clicked="OnProvideHintClicked" />
+        </StackLayout>
+
+        <!-- Reset Button -->
+        <StackLayout Orientation="Horizontal" Spacing="10" VerticalOptions="Start">
+            <Label Text="Reset Ranking: " FontSize="18" VerticalOptions="Center" />
+            <Button Text="Reset" Clicked="OnResetDataClicked" BackgroundColor="purple" TextColor="White" />
         </StackLayout>
 
         <!-- Back Button -->
